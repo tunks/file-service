@@ -1,12 +1,17 @@
 package com.att.kepler.fs.service;
 
 import java.util.List;
+import java.util.Optional;
 
-import com.att.kepler.fs.support.FileInfo;
+import com.att.kepler.fs.dto.FileDto;
+import com.att.kepler.fs.exceptions.FileException;
+import com.att.kepler.fs.model.FileInfo;
+import com.att.kepler.fs.support.FileResource;
 
 /***
  * FileService base interface
  *  
+ *  @author ebrimatunkara
  */
 public interface FileService<T> {
    /***
@@ -16,20 +21,19 @@ public interface FileService<T> {
     *  @param query
     *  @return List<entity>
     */
-   public List<FileInfo> findAll(FileInfo info);
+   public List<FileInfo> findAll(FileDto fileDto);
    /***
     * 
     *  Get file resource
     *  
-    *  @param query
     *  @return Resource
     */
-   public T getResource(FileInfo info);
+   public Optional<FileResource> getFile(FileDto fileDto) throws FileException;
    /***
     * 
     *  Save file resource
     *  
     *  @param object
     */
-   public void save(FileInfo info, T object);
+   public void save(FileDto fileDto) throws FileException;
 }
