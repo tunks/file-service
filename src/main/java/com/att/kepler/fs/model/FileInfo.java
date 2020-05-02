@@ -1,5 +1,13 @@
 package com.att.kepler.fs.model;
 
+import java.net.URLConnection;
+
+import javax.activation.MimetypesFileTypeMap;
+
+import org.springframework.boot.web.server.MimeMappings;
+import org.springframework.boot.web.server.MimeMappings.Mapping;
+import org.springframework.http.MediaType;
+
 import com.att.kepler.fs.dto.FileDto;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -110,8 +118,10 @@ public class FileInfo {
 			 this();
 			 this.info = fileDto;
 			 if(fileDto.getUploadedFile() != null) {
-			    this.setFileName(fileDto.getUploadedFile().getOriginalFilename());
-			    this.setFileType(fileDto.getUploadedFile().getContentType());
+				 String filename = fileDto.getUploadedFile().getOriginalFilename();
+				 String fileType = getFileMimeType(filename);
+			     this.setFileName(filename);
+			     this.setFileType(fileType);
 			 }
 		}
 
@@ -148,6 +158,21 @@ public class FileInfo {
 			this.info = info;
 		}
 
+		private String getFileMimeType(String filename) {
+			try {
+			  MimetypesFileTypeMap fileTypeMap = new MimetypesFileTypeMap();
+				String mimeType = URLConnection.guessContentTypeFromName(filename);
+
+			  
+			  //String mimeType = fileTypeMap.getContentType(filename);
+			  System.out.println("filename "+filename +", mimeType: "+mimeType);
+			  return mimeType;
+			}
+			catch(Exception ex) {
+				ex.printStackTrace();
+			}
+			return MediaType.APPLICATION_OCTET_STREAM_VALUE;
+		}
 		public FileInfo build() {
 			return this.info;
 		}

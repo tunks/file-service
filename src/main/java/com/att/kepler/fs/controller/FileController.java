@@ -36,16 +36,17 @@ public class FileController {
 	@Autowired
 	private FileService<InputStream> fileService;
 	
-	@PostMapping
+	@PostMapping()
 	public ResponseEntity<?> upload(@RequestParam("file") MultipartFile file , 
 			                        @RequestParam(name="createdby", required= false) String createdBy, 
-			                        @RequestParam(name="namespace" , required= false) String namespace,
+			                        @RequestParam(name="ns" , required= false) String namespace,
 			                        @RequestParam(name="resourceId") String resourceId,
 			                        @RequestParam(name="resourceType") String resourceType) {	
 		try {
 			FileDto dto = new FileDto(createdBy,namespace, file);
 			dto.setResourceId(resourceId);
 			dto.setResourceType(resourceType);
+			dto.setNamespace(namespace);
 			fileService.save(dto);
 			return ResponseEntity.ok().body("Success");
 		} catch (FileException ex) {
@@ -91,7 +92,7 @@ public class FileController {
 		}	
 	}
 	
-	@GetMapping(value="/download")
+	@GetMapping(value="/rs/download")
 	public ResponseEntity<?> downloadByResourceInfo( @RequestParam(name = "resourceId",  required=false) String resourceId,
 								               @RequestParam(name = "resourceType", required=false) String resourceType,
 								               @RequestParam(name = "ns", required=false) String namespace){
@@ -143,7 +144,7 @@ public class FileController {
 		}	
 	}
 	
-	@GetMapping(value="/view", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	@GetMapping(value="/rs/view/", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	public ResponseEntity<byte[]> viewByResourceInfo( @RequestParam(name = "resourceId",  required=false) String resourceId,
 								                      @RequestParam(name = "resourceType", required=false) String resourceType,
 								                      @RequestParam(name = "ns", required=false) String namespace){

@@ -95,7 +95,7 @@ public class FileControllerTest {
 		   .andExpect(status().isOk())
 	       .andExpect(content().contentType(MediaType.TEXT_PLAIN_VALUE));
 		
-		requestBuilder = MockMvcRequestBuilders.get(FILES_URL+"/download/")
+		requestBuilder = MockMvcRequestBuilders.get(FILES_URL+"/rs/download/")
 			                .accept(MediaType.APPLICATION_JSON)  
 			                .queryParam("resourceId", resourceId);
 			               // .param("resourceId", resourceId)
@@ -142,7 +142,7 @@ public class FileControllerTest {
 		   .andExpect(status().isOk())
 	       .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM));
 		
-		requestBuilder = MockMvcRequestBuilders.get(FILES_URL+"/view/")
+		requestBuilder = MockMvcRequestBuilders.get(FILES_URL+"/rs/view/")
 			                .accept(MediaType.APPLICATION_OCTET_STREAM)  
 			                .queryParam("resourceId", resourceId)
                             .param("resourceType", resourceType);

@@ -71,6 +71,7 @@ public class FileServiceImpl implements FileService<InputStream> {
 				GridFSFile file = gridFile.get();
 				FileResource fileResource = new FileResource();
 				fileResource.setId(file.getObjectId().toString());
+				fileResource.setFileName(file.getFilename());
 				Document metadata = file.getMetadata();
 				fileResource.setFileType(metadata.getString("fileType"));
 				Resource resource = this.gridFsOperations.getResource(file);
