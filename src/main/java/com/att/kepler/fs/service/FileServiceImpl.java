@@ -51,8 +51,10 @@ public class FileServiceImpl implements FileService<InputStream> {
 				fileInfo.setFileType(metadata.getString("fileType"));
 				fileInfo.setFileVersion(metadata.getInteger("fileVersion"));
 				fileInfo.setCreatedBy(metadata.getString("createdBy"));
-				fileInfo.setFileName(metadata.getString("fileName"));
+				fileInfo.setFileName(gridFile.getFilename());
 				fileInfo.setNamespace(metadata.getString("namespace"));
+				fileInfo.setResourceId(metadata.getString("resourceId"));
+				fileInfo.setResourceType(metadata.getString("resourceType"));
 				files.add(fileInfo);
 			}
 		} catch (Exception ex) {
