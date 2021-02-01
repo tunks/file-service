@@ -23,7 +23,7 @@ variables:
   dockerRegistryServiceConnection: '0f994c3b-8654-4c97-baeb-620f9a3dc1fb'
   imageRepository: 'fileservice'
   containerRegistry: 'tunkzdevcr01.azurecr.io'
-  dockerfilePath: '**/Dockerfile'
+  dockerfilePath: 'Dockerfile'
   tag: '$(Build.BuildId)'
   
   # Agent VM image name
