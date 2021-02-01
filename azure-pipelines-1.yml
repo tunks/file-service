@@ -3,7 +3,14 @@ trigger:
 - azure_dev
 
 resources:
-- repo: self
+  containers:
+  - container: redis
+    image: redis
+    ports:
+    - 6379:6379
+
+pool:
+  vmImage: 'ubuntu-latest'
 
 variables:
   # Container registry service connection established during pipeline creation
