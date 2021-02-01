@@ -7,6 +7,8 @@ resources:
   containers:
   - container: redis
     image: redis
+    ports:
+    - 6379
     
 trigger:
 - azure_dev
@@ -14,6 +16,9 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
+services:
+  redis: redis
+  
 steps:
 - task: Maven@3
   inputs:
