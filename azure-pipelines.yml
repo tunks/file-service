@@ -8,7 +8,7 @@ resources:
   - container: redis
     image: redis
     ports:
-    - 6379
+    - 6379:6379
     
 trigger:
 - azure_dev
