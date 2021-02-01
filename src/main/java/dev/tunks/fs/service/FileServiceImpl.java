@@ -1,63 +1,62 @@
 package dev.tunks.fs.service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-import org.bson.Document;
-import org.bson.types.ObjectId;
+import javax.activation.MimetypesFileTypeMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.gridfs.GridFsOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import com.mongodb.client.MongoCursor;
-import com.mongodb.client.gridfs.GridFSFindIterable;
-import com.mongodb.client.gridfs.model.GridFSFile;
-
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobContainerClientBuilder;
+import com.azure.storage.blob.specialized.BlockBlobClient;
 import dev.tunk.fs.dto.FileDto;
+import dev.tunk.fs.repositories.FileInfoRepository;
 import dev.tunks.fs.exceptions.FileException;
 import dev.tunks.fs.model.FileInfo;
 import dev.tunks.fs.support.FileResource;
 
 @Service("fileService")
-public class FileServiceImpl implements FileService<InputStream> {
+public class FileServiceImpl implements FileService<FileInfo>,InitializingBean {
 	private static final Logger logger = LoggerFactory.getLogger(FileServiceImpl.class);
 
-	@Autowired
-	@Qualifier("gridFsTemplate")
-	private GridFsOperations gridFsOperations;
+	@Value("${connectionUrl}")
+	private String connectionUrl;
+	
+	@Value("${endpoint}")
+	private String endpoint;
+	
+	@Value("${sasToken}")
+	private String sasToken;
+	
+	@Value("${containerName}")
+	private String containerName;
+	
+	@javax.annotation.Resource
+	private FileInfoRepository fileInfoRepository;
+	
+	private BlobContainerClient blobContainerClient;
 
 	@Override
 	public List<FileInfo> findAll(FileDto fileDto) {
-		FileInfo fileInfo;
 		List<FileInfo> files = new ArrayList<FileInfo>();
-		Optional<Query> query = getFileQuery(fileDto);
 		try {
-			GridFSFindIterable iterable = this.gridFsOperations.find(query.get());
-			MongoCursor<GridFSFile> cursor = iterable.iterator();
-			Document metadata;
-			GridFSFile gridFile;
-			while (cursor.hasNext()) {
-				gridFile = cursor.next();
-				metadata = gridFile.getMetadata();
-				fileInfo = new FileInfo();
-				fileInfo.setId(gridFile.getObjectId().toString());
-				fileInfo.setFileType(metadata.getString("fileType"));
-				fileInfo.setFileVersion(metadata.getInteger("fileVersion"));
-				fileInfo.setCreatedBy(metadata.getString("createdBy"));
-				fileInfo.setFileName(gridFile.getFilename());
-				fileInfo.setNamespace(metadata.getString("namespace"));
-				fileInfo.setResourceId(metadata.getString("resourceId"));
-				fileInfo.setResourceType(metadata.getString("resourceType"));
-				files.add(fileInfo);
+			Iterator<FileInfo> fileInfos = fileInfoRepository.findAll().iterator();
+			while(fileInfos.hasNext()) {
+				files.add(fileInfos.next());
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -68,21 +67,23 @@ public class FileServiceImpl implements FileService<InputStream> {
 	@Override
 	public Optional<FileResource> getFile(FileDto fileDto) throws FileException {
 		try {
-			Optional<Query> query = getFileQuery(fileDto);
-			Optional<GridFSFile> gridFile = (query.isPresent()) ? Optional.ofNullable(gridFsOperations.findOne(query.get()))
-					                         : Optional.empty();
-			if (gridFile.isPresent()) {
-				GridFSFile file = gridFile.get();
+			Optional<FileInfo> fileInfoOpt = fileInfoRepository.findById(fileDto.getId());
+			if(fileInfoOpt.isPresent()) {
+				FileInfo fileInfo = fileInfoOpt.get();
+				logger.info("Get file: "+fileInfo);
+		    	BlockBlobClient blockBlobClient = blobContainerClient.getBlobClient(fileInfo.getFileName()).getBlockBlobClient();
+		    	ByteArrayOutputStream outstream = new ByteArrayOutputStream();
+		    	blockBlobClient.download(outstream);
 				FileResource fileResource = new FileResource();
-				fileResource.setId(file.getObjectId().toString());
-				fileResource.setFileName(file.getFilename());
-				Document metadata = file.getMetadata();
-				fileResource.setFileType(metadata.getString("fileType"));
-				Resource resource = this.gridFsOperations.getResource(file);
+				fileResource.setFileName(fileInfo.getFileName());
+				fileResource.setFileType(fileInfo.getFileType());
+				Resource resource = new ByteArrayResource(outstream.toByteArray());
 				fileResource.setResource(resource);
 				return Optional.ofNullable(fileResource);
 			}
-			return Optional.empty();
+			else {
+				return Optional.empty();
+			}
 		} catch (IllegalStateException ex) {
 			logger.error(ex.getMessage());
 			throw new FileException(ex.getMessage());
@@ -91,50 +92,44 @@ public class FileServiceImpl implements FileService<InputStream> {
 
 	@Override
 	public void save(FileDto fileDto) throws FileException {
-		try {
-			FileInfo info = new FileInfo.FileInfoBuilder(fileDto).build();
-			gridFsOperations.store(fileDto.getUploadedFile().getInputStream(), info.getFileName(), info.dbObject());
+	    try
+	    {
+	    	BlobClient blockBlobClient = blobContainerClient.getBlobClient(fileDto.getFileName());
+	    	MultipartFile multipartFile = fileDto.getUploadedFile();
+	        blockBlobClient.upload(multipartFile.getInputStream(), multipartFile.getResource().contentLength());
+	        FileInfo fileInfo = new FileInfo();
+	        fileInfo.setId(UUID.randomUUID().toString());
+	        fileInfo.setFileName(fileDto.getFileName());
+	        fileInfo.setFileType(fileDto.getFileType());
+	        fileInfo.setCreatedBy(fileDto.getCreatedBy());
+	        if(fileInfo.getFileType() == null) {
+	           fileInfo.setFileType(fileMimeType(fileInfo.getFileName()));
+	        }
+	        logger.info("Save file: "+fileInfo);
+	        fileInfoRepository.save(fileInfo);
 		} catch (IOException ex) {
 			logger.error(ex.getMessage());
+			ex.printStackTrace();
 		}
 	}
-	
-	private Optional<Query> getFileQuery(FileDto fileDto){
-		Optional<String> fileId = Optional.ofNullable(fileDto.getId());
-		Criteria criteria = new Criteria();
-		if (fileId.isPresent() && ObjectId.isValid(fileId.get())) {
-			ObjectId objectId = new ObjectId(fileId.get());
-			criteria = Criteria.where("_id").is(objectId);
-		}
-		else {	
-			List<Criteria> conditions = new ArrayList<Criteria>(); 
-			Optional<String> fileName = Optional.ofNullable(fileDto.getFileName());
-			Optional<String> resourceId = Optional.ofNullable(fileDto.getResourceId());
-			Optional<String> resourceType = Optional.ofNullable(fileDto.getResourceType());
-			Optional<String> namespace = Optional.ofNullable(fileDto.getNamespace());
-			if (fileName.isPresent()) {
-			    conditions.add(Criteria.where("filename").is(fileName.get()));
-			}
-			
-			if (resourceId.isPresent()) {
-				conditions.add(Criteria.where("metadata.resourceId").is(resourceId.get()));
-			}
-			
-			if (resourceType.isPresent()) {
-				conditions.add(Criteria.where("metadata.resourceType").is(resourceType.get()));
-			}
-			
-			if (namespace.isPresent()) {
-				conditions.add(Criteria.where("metadata.namespace").is(namespace.get()));
-			}
-			if(conditions.isEmpty()) {
-			   return Optional.empty();
-			}
 
-			criteria.andOperator(conditions.toArray(new Criteria[0]));
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		try {
+		blobContainerClient = new BlobContainerClientBuilder()
+							     .sasToken(sasToken)
+								 .connectionString(connectionUrl)
+							     .containerName(containerName)
+							     .buildClient();
 		}
-		Query query = new Query(criteria);
-		System.out.println(query.toString());
-		return Optional.of(query);
+		catch(Exception ex) {
+			ex.printStackTrace();
+		}
+		
+	}
+	
+	private String fileMimeType(String filename) {
+	    MimetypesFileTypeMap fileTypeMap = new MimetypesFileTypeMap();	
+	    return fileTypeMap.getContentType(filename);
 	}
 }

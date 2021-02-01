@@ -14,10 +14,12 @@ public class FileDto extends FileInfo{
 		super.setId(fileId);
 	}
 
-	public FileDto(String createdBy, String namespace, MultipartFile uploadedFile) {
+	public FileDto(String createdBy, MultipartFile uploadedFile) {
 		super.setCreatedBy(createdBy);
-		this.setNamespace(namespace);
 		this.uploadedFile = uploadedFile;
+		if(uploadedFile != null) {
+		   this.setFileName(uploadedFile.getOriginalFilename());
+		}
 	}
 
 	public MultipartFile getUploadedFile() {
