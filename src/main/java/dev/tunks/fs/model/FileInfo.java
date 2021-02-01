@@ -1,4 +1,4 @@
-package com.att.kepler.fs.model;
+package dev.tunks.fs.model;
 
 import java.net.URLConnection;
 
@@ -8,9 +8,10 @@ import org.springframework.boot.web.server.MimeMappings;
 import org.springframework.boot.web.server.MimeMappings.Mapping;
 import org.springframework.http.MediaType;
 
-import com.att.kepler.fs.dto.FileDto;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+
+import dev.tunk.fs.dto.FileDto;
 
 public class FileInfo {
 	public static int DEFAULT_VERSION = 1;

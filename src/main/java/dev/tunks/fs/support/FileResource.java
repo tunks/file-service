@@ -1,8 +1,8 @@
-package com.att.kepler.fs.support;
+package dev.tunks.fs.support;
 
 import org.springframework.core.io.Resource;
 
-import com.att.kepler.fs.model.FileInfo;
+import dev.tunks.fs.model.FileInfo;
 
 public class FileResource extends FileInfo {
 	private Resource resource;

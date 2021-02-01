@@ -1,7 +1,8 @@
-package com.att.kepler.fs.dto;
+package dev.tunk.fs.dto;
 
 import org.springframework.web.multipart.MultipartFile;
-import com.att.kepler.fs.model.FileInfo;
+
+import dev.tunks.fs.model.FileInfo;
 
 public class FileDto extends FileInfo{
 	private MultipartFile uploadedFile;

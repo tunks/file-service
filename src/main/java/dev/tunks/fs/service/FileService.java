@@ -1,12 +1,12 @@
-package com.att.kepler.fs.service;
+package dev.tunks.fs.service;
 
 import java.util.List;
 import java.util.Optional;
 
-import com.att.kepler.fs.dto.FileDto;
-import com.att.kepler.fs.exceptions.FileException;
-import com.att.kepler.fs.model.FileInfo;
-import com.att.kepler.fs.support.FileResource;
+import dev.tunk.fs.dto.FileDto;
+import dev.tunks.fs.exceptions.FileException;
+import dev.tunks.fs.model.FileInfo;
+import dev.tunks.fs.support.FileResource;
 
 /***
  * FileService base interface

@@ -1,4 +1,4 @@
-package com.att.kepler.fs.controller;
+package dev.tunks.fs.controller;
 
 import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -24,10 +24,11 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import com.att.kepler.fs.FileServiceApplication;
-import com.att.kepler.fs.dto.FileDto;
-import com.att.kepler.fs.model.FileInfo;
-import com.att.kepler.fs.service.FileService;
+
+import dev.tunk.fs.dto.FileDto;
+import dev.tunks.fs.FileServiceApplication;
+import dev.tunks.fs.model.FileInfo;
+import dev.tunks.fs.service.FileService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = FileServiceApplication.class)

@@ -1,4 +1,4 @@
-package com.att.kepler.fs.service;
+package dev.tunks.fs.service;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,13 +17,15 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsOperations;
 import org.springframework.stereotype.Service;
-import com.att.kepler.fs.dto.FileDto;
-import com.att.kepler.fs.exceptions.FileException;
-import com.att.kepler.fs.model.FileInfo;
-import com.att.kepler.fs.support.FileResource;
+
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.gridfs.GridFSFindIterable;
 import com.mongodb.client.gridfs.model.GridFSFile;
+
+import dev.tunk.fs.dto.FileDto;
+import dev.tunks.fs.exceptions.FileException;
+import dev.tunks.fs.model.FileInfo;
+import dev.tunks.fs.support.FileResource;
 
 @Service("fileService")
 public class FileServiceImpl implements FileService<InputStream> {
