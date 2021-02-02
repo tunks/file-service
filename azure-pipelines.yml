@@ -26,7 +26,7 @@ stages:
 - stage: Package
   displayName: Maven test and package jar
   jobs:
-    - job: Build Deploy
+    - job: BuildDeploy
       services:
         redis: redis
       steps:
