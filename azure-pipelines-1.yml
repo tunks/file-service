@@ -28,9 +28,6 @@ stages:
   displayName: Maven test and package jar
   jobs:
     - job: mvnpackage
-      
-      services:
-          redis: redis
       steps:
         - task: Maven@3
           inputs:
