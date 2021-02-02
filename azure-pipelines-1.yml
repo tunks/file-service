@@ -27,10 +27,6 @@ stages:
   displayName: Maven test and package jar
   jobs:
     - job: mvnpackage
-      container:
-       image: redis
-       ports:
-       - 6379:6379
       services:
         redis: redis
       steps:
