@@ -1,7 +1,6 @@
-# Maven
-# Build your Java project and run tests with Apache Maven.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/java
+# Docker
+trigger:
+- azure_dev
 
 resources:
   containers:
@@ -9,24 +8,54 @@ resources:
     image: redis
     ports:
     - 6379:6379
-    
-trigger:
-- azure_dev
-
 pool:
   vmImage: 'ubuntu-latest'
 
-services:
-  redis: redis
+variables:
+  # Container registry service connection established during pipeline creation
+  dockerRegistryServiceConnection: '0f994c3b-8654-4c97-baeb-620f9a3dc1fb'
+  imageRepository: 'fileservice'
+  containerRegistry: 'tunkzdevcr01.azurecr.io'
+  dockerfilePath: 'Dockerfile'
+  tag: '$(Build.BuildId)'
   
-steps:
-- task: Maven@3
-  inputs:
-    mavenPomFile: 'pom.xml'
-    mavenOptions: '-Xmx3072m'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.8'
-    jdkArchitectureOption: 'x64'
-    publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    goals: 'package'
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
+
+stages:
+- stage: Package
+  displayName: Maven test and package jar
+  jobs:
+    - job: mvnpackage
+      services:
+        redis: redis
+      steps:
+        - task: Maven@3
+          inputs:
+            mavenPomFile: 'pom.xml'
+            mavenOptions: '-Xmx3072m'
+            javaHomeOption: 'JDKVersion'
+            jdkVersionOption: '1.8'
+            jdkArchitectureOption: 'x64'
+            publishJUnitResults: true
+            testResultsFiles: '**/surefire-reports/TEST-*.xml'
+            goals: 'package'
+        - task: Docker@2
+          displayName: dockerLogin
+          inputs:
+             command: login
+             containerRegistry: $(dockerRegistryServiceConnection)
+        - task: Docker@2
+          inputs:
+            repository: $(imageRepository)
+            dockerfile: $(dockerfilePath)
+            command: 'build'
+            tags: |
+              $(tag)
+        - task: Docker@2
+          inputs:
+            repository: $(imageRepository)
+            dockerfile: $(dockerfilePath)
+            command: 'push'
+            tags: |
+              $(tag)
