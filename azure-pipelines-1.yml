@@ -44,7 +44,7 @@ stages:
           displayName: dockerLogin
           inputs:
              command: login
-             containerRegistry: $(containerRegistryServiceConnection)
+             containerRegistry: $(dockerRegistryServiceConnection)
         - task: Docker@2
           inputs:
             repository: $(imageRepository)
