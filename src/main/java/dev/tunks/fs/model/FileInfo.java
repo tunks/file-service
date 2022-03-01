@@ -1,19 +1,20 @@
-package com.att.kepler.fs.model;
+package dev.tunks.fs.model;
 
 import java.net.URLConnection;
-
+import java.util.HashMap;
+import java.util.Map;
 import javax.activation.MimetypesFileTypeMap;
 
-import org.springframework.boot.web.server.MimeMappings;
-import org.springframework.boot.web.server.MimeMappings.Mapping;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.redis.core.RedisHash;
 import org.springframework.http.MediaType;
 
-import com.att.kepler.fs.dto.FileDto;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import dev.tunk.fs.dto.FileDto;
 
+@RedisHash("fileinfo")
 public class FileInfo {
 	public static int DEFAULT_VERSION = 1;
+	@Id
 	private String id;
 	private String fileName;
 	private String fileType;
@@ -87,15 +88,15 @@ public class FileInfo {
 		this.resourceType = resourceType;
 	}
 
-	public DBObject dbObject() {
-		DBObject object = new BasicDBObject();
-		//object.put("fileName", this.fileName);
-		object.put("createdBy", this.createdBy);
-		object.put("fileType", this.fileType);
-		object.put("fileVersion", this.fileVersion);
-		object.put("namespace", this.namespace);
-		object.put("resourceId", this.resourceId);
-		object.put("resourceType", this.resourceType);
+	public Map<String,String> mapObject() {
+		Map<String,String> object = new HashMap<String,String>();
+		object.put("fileName",fileName);
+		object.put("createdBy",createdBy);
+		object.put("fileType", fileType);
+		object.put("fileVersion", String.valueOf(fileVersion));
+		object.put("namespace", namespace);
+		object.put("resourceId", resourceId);
+		object.put("resourceType", resourceType);
 		return object;
 	}
 

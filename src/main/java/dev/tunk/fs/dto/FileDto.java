@@ -1,7 +1,8 @@
-package com.att.kepler.fs.dto;
+package dev.tunk.fs.dto;
 
 import org.springframework.web.multipart.MultipartFile;
-import com.att.kepler.fs.model.FileInfo;
+
+import dev.tunks.fs.model.FileInfo;
 
 public class FileDto extends FileInfo{
 	private MultipartFile uploadedFile;
@@ -13,10 +14,12 @@ public class FileDto extends FileInfo{
 		super.setId(fileId);
 	}
 
-	public FileDto(String createdBy, String namespace, MultipartFile uploadedFile) {
+	public FileDto(String createdBy, MultipartFile uploadedFile) {
 		super.setCreatedBy(createdBy);
-		this.setNamespace(namespace);
 		this.uploadedFile = uploadedFile;
+		if(uploadedFile != null) {
+		   this.setFileName(uploadedFile.getOriginalFilename());
+		}
 	}
 
 	public MultipartFile getUploadedFile() {

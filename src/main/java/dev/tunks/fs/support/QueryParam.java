@@ -1,4 +1,4 @@
-package com.att.kepler.fs.support;
+package dev.tunks.fs.support;
 
 public class QueryParam {
 	private String fileName;
